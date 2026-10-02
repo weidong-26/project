@@ -1,0 +1,74 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "b8e5ecfb92642b208e85",
+  "position": {
+    "x": 10,
+    "y": 0,
+    "z": 0,
+    "height": 386.25,
+    "width": 415,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "funnel",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "taobao_analysis taobao"
+                    }
+                  },
+                  "Property": "behavior"
+                }
+              },
+              "queryRef": "taobao_analysis taobao.behavior",
+              "nativeQueryRef": "behavior",
+              "active": true
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "taobao_analysis taobao"
+                    }
+                  },
+                  "Property": "Active Users"
+                }
+              },
+              "queryRef": "taobao_analysis taobao.Active Users",
+              "nativeQueryRef": "Active Users"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "taobao_analysis taobao"
+                  }
+                },
+                "Property": "behavior"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

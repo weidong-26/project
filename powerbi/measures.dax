@@ -1,0 +1,354 @@
+// Model: taobao_analysis taobao
+// Create the calculated tables first, then relationships and measures.
+
+DimDate =
+VAR _minDate =
+    MINX (
+        ALL ( 'taobao_analysis taobao' ),
+        DATE (
+            YEAR ( 'taobao_analysis taobao'[date] ),
+            MONTH ( 'taobao_analysis taobao'[date] ),
+            DAY ( 'taobao_analysis taobao'[date] )
+        )
+    )
+VAR _maxDate =
+    MAXX (
+        ALL ( 'taobao_analysis taobao' ),
+        DATE (
+            YEAR ( 'taobao_analysis taobao'[date] ),
+            MONTH ( 'taobao_analysis taobao'[date] ),
+            DAY ( 'taobao_analysis taobao'[date] )
+        )
+    )
+RETURN
+    ADDCOLUMNS (
+        CALENDAR ( _minDate, _maxDate ),
+        "Year", YEAR ( [Date] ),
+        "MonthNo", MONTH ( [Date] ),
+        "YearMonth", FORMAT ( [Date], "yyyy-MM" ),
+        "YearMonthSort", YEAR ( [Date] ) * 100 + MONTH ( [Date] ),
+        "WeekdayNo", WEEKDAY ( [Date], 2 ),
+        "Weekday",
+            SWITCH (
+                WEEKDAY ( [Date], 2 ),
+                1, "周一",
+                2, "周二",
+                3, "周三",
+                4, "周四",
+                5, "周五",
+                6, "周六",
+                "周日"
+            )
+    )
+
+DimBehavior =
+DATATABLE (
+    "behavior", STRING,
+    "行为名称", STRING,
+    "Sort", INTEGER,
+    {
+        { "pv", "浏览", 1 },
+        { "fav", "收藏", 2 },
+        { "cart", "加购", 3 },
+        { "buy", "购买", 4 }
+    }
+)
+
+Funnel Stage =
+DATATABLE (
+    "Stage", STRING,
+    "Stage Sort", INTEGER,
+    {
+        { "浏览", 1 },
+        { "收藏", 2 },
+        { "加购", 3 },
+        { "购买", 4 }
+    }
+)
+
+User Profile =
+VAR _profile =
+    SUMMARIZE (
+        'taobao_analysis taobao',
+        'taobao_analysis taobao'[user_id],
+        "PV Events",
+            CALCULATE (
+                COUNTROWS ( 'taobao_analysis taobao' ),
+                REMOVEFILTERS ( DimBehavior ),
+                REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+                'taobao_analysis taobao'[behavior] = "pv"
+            ),
+        "Favorite Events",
+            CALCULATE (
+                COUNTROWS ( 'taobao_analysis taobao' ),
+                REMOVEFILTERS ( DimBehavior ),
+                REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+                'taobao_analysis taobao'[behavior] = "fav"
+            ),
+        "Cart Events",
+            CALCULATE (
+                COUNTROWS ( 'taobao_analysis taobao' ),
+                REMOVEFILTERS ( DimBehavior ),
+                REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+                'taobao_analysis taobao'[behavior] = "cart"
+            ),
+        "Buy Events",
+            CALCULATE (
+                COUNTROWS ( 'taobao_analysis taobao' ),
+                REMOVEFILTERS ( DimBehavior ),
+                REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+                'taobao_analysis taobao'[behavior] = "buy"
+            )
+    )
+RETURN
+    ADDCOLUMNS (
+        _profile,
+        "Behavior Segment",
+            SWITCH (
+                TRUE (),
+                [Buy Events] > 0, "已购买",
+                [Cart Events] > 0, "加购未购买",
+                [Favorite Events] > 0, "收藏未加购",
+                [PV Events] > 0, "仅浏览",
+                "其他"
+            ),
+        "Purchase Frequency Segment",
+            SWITCH (
+                TRUE (),
+                [Buy Events] = 0, "未购买",
+                [Buy Events] >= 2, "高购买行为频次（≥2条buy日志）",
+                "单次购买行为"
+            )
+    )
+
+// Relationships:
+// DimDate[Date] 1 -> * 'taobao_analysis taobao'[date]
+// DimBehavior[behavior] 1 -> * 'taobao_analysis taobao'[behavior]
+// User Profile[user_id] 1 -> * 'taobao_analysis taobao'[user_id]
+// Funnel Stage is disconnected.
+// Sort DimDate[YearMonth] by [YearMonthSort], DimDate[Weekday] by [WeekdayNo],
+// DimBehavior[行为名称] by [Sort], Funnel Stage[Stage] by [Stage Sort].
+
+// Replace the four existing Desktop measures and add the remaining measures.
+
+PV Count =
+CALCULATE (
+    COUNTROWS ( 'taobao_analysis taobao' ),
+    REMOVEFILTERS ( DimBehavior ),
+    REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+    'taobao_analysis taobao'[behavior] = "pv"
+)
+
+PV Users =
+CALCULATE (
+    DISTINCTCOUNT ( 'taobao_analysis taobao'[user_id] ),
+    REMOVEFILTERS ( DimBehavior ),
+    REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+    'taobao_analysis taobao'[behavior] = "pv"
+)
+
+Favorite Users =
+CALCULATE (
+    DISTINCTCOUNT ( 'taobao_analysis taobao'[user_id] ),
+    REMOVEFILTERS ( DimBehavior ),
+    REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+    'taobao_analysis taobao'[behavior] = "fav"
+)
+
+Cart Users =
+CALCULATE (
+    DISTINCTCOUNT ( 'taobao_analysis taobao'[user_id] ),
+    REMOVEFILTERS ( DimBehavior ),
+    REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+    'taobao_analysis taobao'[behavior] = "cart"
+)
+
+Buy Users =
+CALCULATE (
+    DISTINCTCOUNT ( 'taobao_analysis taobao'[user_id] ),
+    REMOVEFILTERS ( DimBehavior ),
+    REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+    'taobao_analysis taobao'[behavior] = "buy"
+)
+
+Active Users =
+CALCULATE (
+    DISTINCTCOUNT ( 'taobao_analysis taobao'[user_id] ),
+    REMOVEFILTERS ( DimBehavior ),
+    REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] )
+)
+
+Total Users =
+CALCULATE (
+    [Active Users],
+    REMOVEFILTERS ( DimDate )
+)
+
+Event Count =
+COUNTROWS ( 'taobao_analysis taobao' )
+
+Behavior Users =
+DISTINCTCOUNT ( 'taobao_analysis taobao'[user_id] )
+
+Behavior User Share =
+DIVIDE ( [Behavior Users], [Active Users] )
+
+Buyer Users Also Viewed =
+VAR _viewers =
+    CALCULATETABLE (
+        VALUES ( 'taobao_analysis taobao'[user_id] ),
+        REMOVEFILTERS ( DimBehavior ),
+        REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+        'taobao_analysis taobao'[behavior] = "pv"
+    )
+VAR _buyers =
+    CALCULATETABLE (
+        VALUES ( 'taobao_analysis taobao'[user_id] ),
+        REMOVEFILTERS ( DimBehavior ),
+        REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+        'taobao_analysis taobao'[behavior] = "buy"
+    )
+RETURN
+    COUNTROWS ( INTERSECT ( _viewers, _buyers ) )
+
+User Conversion Rate =
+DIVIDE ( [Buyer Users Also Viewed], [PV Users] )
+
+PV / UV =
+DIVIDE ( [PV Count], [PV Users] )
+
+Funnel Users =
+VAR _stage =
+    SELECTEDVALUE ( 'Funnel Stage'[Stage] )
+VAR _users0 =
+    CALCULATETABLE (
+        VALUES ( 'taobao_analysis taobao'[user_id] ),
+        REMOVEFILTERS ( DimBehavior ),
+        REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] )
+    )
+VAR _users1 =
+    ADDCOLUMNS (
+        _users0,
+        "__PV",
+            CALCULATE (
+                MIN ( 'taobao_analysis taobao'[datetime] ),
+                REMOVEFILTERS ( DimBehavior ),
+                REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+                'taobao_analysis taobao'[behavior] = "pv"
+            )
+    )
+VAR _users2 =
+    ADDCOLUMNS (
+        _users1,
+        "__Favorite",
+            VAR _pv = [__PV]
+            RETURN
+                IF (
+                    NOT ISBLANK ( _pv ),
+                    CALCULATE (
+                        MIN ( 'taobao_analysis taobao'[datetime] ),
+                        REMOVEFILTERS ( DimBehavior ),
+                        REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+                        'taobao_analysis taobao'[behavior] = "fav",
+                        'taobao_analysis taobao'[datetime] > _pv
+                    )
+                )
+    )
+VAR _users3 =
+    ADDCOLUMNS (
+        _users2,
+        "__Cart",
+            VAR _favorite = [__Favorite]
+            RETURN
+                IF (
+                    NOT ISBLANK ( _favorite ),
+                    CALCULATE (
+                        MIN ( 'taobao_analysis taobao'[datetime] ),
+                        REMOVEFILTERS ( DimBehavior ),
+                        REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+                        'taobao_analysis taobao'[behavior] = "cart",
+                        'taobao_analysis taobao'[datetime] > _favorite
+                    )
+                )
+    )
+VAR _users4 =
+    ADDCOLUMNS (
+        _users3,
+        "__Buy",
+            VAR _cart = [__Cart]
+            RETURN
+                IF (
+                    NOT ISBLANK ( _cart ),
+                    CALCULATE (
+                        MIN ( 'taobao_analysis taobao'[datetime] ),
+                        REMOVEFILTERS ( DimBehavior ),
+                        REMOVEFILTERS ( 'taobao_analysis taobao'[behavior] ),
+                        'taobao_analysis taobao'[behavior] = "buy",
+                        'taobao_analysis taobao'[datetime] > _cart
+                    )
+                )
+    )
+RETURN
+    COUNTROWS (
+        FILTER (
+            _users4,
+            SWITCH (
+                _stage,
+                "浏览", NOT ISBLANK ( [__PV] ),
+                "收藏", NOT ISBLANK ( [__Favorite] ),
+                "加购", NOT ISBLANK ( [__Cart] ),
+                "购买", NOT ISBLANK ( [__Buy] ),
+                FALSE ()
+            )
+        )
+    )
+
+Funnel Step Conversion =
+VAR _stageNo =
+    SELECTEDVALUE ( 'Funnel Stage'[Stage Sort] )
+VAR _previousUsers =
+    CALCULATE (
+        [Funnel Users],
+        REMOVEFILTERS ( 'Funnel Stage' ),
+        'Funnel Stage'[Stage Sort] = _stageNo - 1
+    )
+RETURN
+    IF (
+        _stageNo <= 1,
+        BLANK (),
+        DIVIDE ( [Funnel Users], _previousUsers )
+    )
+
+Funnel Total Conversion =
+VAR _viewers =
+    CALCULATE (
+        [Funnel Users],
+        REMOVEFILTERS ( 'Funnel Stage' ),
+        'Funnel Stage'[Stage] = "浏览"
+    )
+VAR _buyers =
+    CALCULATE (
+        [Funnel Users],
+        REMOVEFILTERS ( 'Funnel Stage' ),
+        'Funnel Stage'[Stage] = "购买"
+    )
+RETURN
+    DIVIDE ( _buyers, _viewers )
+
+Profile Users =
+DISTINCTCOUNT ( 'User Profile'[user_id] )
+
+Profile Buyers =
+CALCULATE (
+    [Profile Users],
+    'User Profile'[Buy Events] > 0
+)
+
+High Frequency Buy Users =
+CALCULATE (
+    [Profile Users],
+    'User Profile'[Buy Events] >= 2
+)
+
+High Frequency Buy User Share =
+DIVIDE ( [High Frequency Buy Users], [Profile Buyers] )

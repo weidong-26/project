@@ -1,0 +1,75 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "561fd4e56a25d8bd6087",
+  "position": {
+    "x": 378.75,
+    "y": 212.5,
+    "z": 2,
+    "height": 296.25,
+    "width": 415,
+    "tabOrder": 2
+  },
+  "visual": {
+    "visualType": "clusteredColumnChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "taobao_analysis taobao"
+                    }
+                  },
+                  "Property": "hour"
+                }
+              },
+              "queryRef": "taobao_analysis taobao.hour",
+              "nativeQueryRef": "hour 的总和",
+              "active": true
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "taobao_analysis taobao"
+                    }
+                  },
+                  "Property": "Active Users"
+                }
+              },
+              "queryRef": "taobao_analysis taobao.Active Users",
+              "nativeQueryRef": "Active Users"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "taobao_analysis taobao"
+                  }
+                },
+                "Property": "Active Users"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

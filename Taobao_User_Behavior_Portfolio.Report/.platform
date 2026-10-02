@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Taobao_User_Behavior_Portfolio"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "cf806ab0-2d50-4cf4-9d16-c6816cc0652f"
+  }
+}

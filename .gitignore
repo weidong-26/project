@@ -1,0 +1,22 @@
+# Raw/generated analysis data
+*.csv
+*.zip
+*.7z
+*.log
+/data/raw/
+/data/processed/
+*.pbix
+
+# Power BI local cache/settings (retain the PBIP/TMDL source files)
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+
+# Python/editor/OS files
+.ipynb_checkpoints/
+__pycache__/
+.venv/
+.env
+.env.*
+*.key
+.DS_Store
+Thumbs.db

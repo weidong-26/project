@@ -1,0 +1,10 @@
+relationship 99816994-be1f-4376-9beb-0bdc40c09e2c
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'taobao_analysis taobao'.datetime
+	toColumn: LocalDateTable_cdba0860-bef9-4cae-ae9c-1cdc81d82d9d.Date
+
+relationship adb026ea-3d52-4628-be34-4351325e8a15
+	joinOnDateBehavior: datePartOnly
+	fromColumn: 'taobao_analysis taobao'.date
+	toColumn: LocalDateTable_6a773328-44dd-42ee-8b2a-80a4f741b579.Date
+

@@ -1,0 +1,165 @@
+table 'taobao_analysis taobao'
+	lineageTag: 7ad8bbdb-9339-4b76-abaf-72519336bfc7
+
+	measure 'PV Users' =
+			
+			CALCULATE(
+			    DISTINCTCOUNT('taobao_analysis taobao'[user_id]),
+			    'taobao_analysis taobao'[behavior] = "pv"
+			)
+		formatString: 0
+		lineageTag: 6f06cd04-582c-455b-a127-74b2e4d832fc
+
+	measure 'Cart Users' =
+			CALCULATE(
+			    DISTINCTCOUNT('taobao_analysis taobao'[user_id]),
+			    'taobao_analysis taobao'[behavior] = "cart"
+			)
+		formatString: 0
+		lineageTag: eae9eef7-e69b-48d8-89ed-5023573ab4bb
+
+	measure 'Buy Users' =
+			CALCULATE(
+			    DISTINCTCOUNT('taobao_analysis taobao'[user_id]),
+			    'taobao_analysis taobao'[behavior] = "buy"
+			)
+		formatString: 0
+		lineageTag: 94897b37-f7ae-440f-bef8-7181eb853a40
+
+	measure 'Active Users' = DISTINCTCOUNT('taobao_analysis taobao'[user_id])
+		formatString: 0
+		lineageTag: 7ab0f6e8-c8bc-4bb7-9d3b-fa0a2f2f4ecd
+
+	measure 用户数 = DISTINCTCOUNT('taobao_analysis taobao'[user_id])
+		formatString: 0
+		lineageTag: 6541cf41-47d1-4ff9-b882-f8eb7138d1ba
+
+	measure 页面浏览量 = CALCULATE(COUNTROWS('taobao_analysis taobao'), 'taobao_analysis taobao'[behavior] = "pv")
+		formatString: 0
+		lineageTag: 1ad367d6-8597-4390-89b7-cfc7dadee22f
+
+	measure 购买转化率 = DIVIDE([Buy Users], [PV Users], 0)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 2ef07382-2af8-4641-aa95-04ada413f888
+
+	measure PV/UV = DIVIDE([页面浏览量], [用户数], 0)
+		lineageTag: 6855af0c-9246-48e5-a35c-82229edd26f5
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 高频购买用户（行为代理） = COUNTROWS(FILTER(VALUES('taobao_analysis taobao'[user_id]), CALCULATE(COUNTROWS('taobao_analysis taobao'), 'taobao_analysis taobao'[behavior] = "buy") >= 2))
+		formatString: 0
+		lineageTag: 19582a40-2f82-4ad9-8197-5be3d8c311d8
+
+	column user_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 5c70168d-4cb6-4a99-aeb7-48621e6b0935
+		summarizeBy: sum
+		sourceColumn: user_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column item_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 787479f0-da25-4622-bafa-82c9cde9f5b9
+		summarizeBy: sum
+		sourceColumn: item_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column category_id
+		dataType: int64
+		formatString: 0
+		lineageTag: b9c5d005-bf7e-4519-9712-cd146955daf3
+		summarizeBy: sum
+		sourceColumn: category_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column behavior
+		dataType: string
+		lineageTag: 345f68ea-87b6-48a0-b193-098a9ac64af9
+		summarizeBy: none
+		sourceColumn: behavior
+
+		annotation SummarizationSetBy = Automatic
+
+	column timestamp
+		dataType: int64
+		formatString: 0
+		lineageTag: f0863fec-44f0-4d0f-91f0-70586e2a7205
+		summarizeBy: sum
+		sourceColumn: timestamp
+
+		annotation SummarizationSetBy = Automatic
+
+	column datetime
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: ca631977-634c-45ad-9711-9d5806eaa897
+		summarizeBy: none
+		sourceColumn: datetime
+
+		variation 变体
+			isDefault
+			relationship: 99816994-be1f-4376-9beb-0bdc40c09e2c
+			defaultHierarchy: LocalDateTable_cdba0860-bef9-4cae-ae9c-1cdc81d82d9d.日期层次结构
+
+		annotation SummarizationSetBy = Automatic
+
+	column date
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 4ca2c8a1-eb34-412c-ae42-ca6644fd818f
+		summarizeBy: none
+		sourceColumn: date
+
+		variation 变体
+			isDefault
+			relationship: adb026ea-3d52-4628-be34-4351325e8a15
+			defaultHierarchy: LocalDateTable_6a773328-44dd-42ee-8b2a-80a4f741b579.日期层次结构
+
+		annotation SummarizationSetBy = Automatic
+
+	column hour
+		dataType: int64
+		formatString: 0
+		lineageTag: ea8b533e-41a6-40ec-9e3f-3d15cffc3b74
+		summarizeBy: sum
+		sourceColumn: hour
+
+		annotation SummarizationSetBy = Automatic
+
+	column weekday
+		dataType: string
+		lineageTag: 3fdf35c3-f343-4c86-9357-1630dff24e9d
+		summarizeBy: none
+		sourceColumn: weekday
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'taobao_analysis taobao' = m
+		mode: import
+		source =
+				let
+				    源 = MySQL.Database("localhost", "taobao_analysis", [ReturnSingleDatabase=true]),
+				    taobao_analysis_taobao = 源{[Schema="taobao_analysis",Item="taobao"]}[Data],
+				    已添加自定义 = Table.AddColumn(taobao_analysis_taobao, "datetime自定义", each #datetime(1970,1,1,0,0,0)
+				+ #duration(0,0,0,[timestamp])
+				+ #duration(0,8,0,0)),
+				    更改的类型 = Table.TransformColumnTypes(已添加自定义,{{"datetime自定义", type datetime}}),
+				    重命名的列 = Table.RenameColumns(更改的类型,{{"datetime自定义", "datetime"}}),
+				    已添加自定义1 = Table.AddColumn(重命名的列, "date", each Date.From([datetime])),
+				    更改的类型1 = Table.TransformColumnTypes(已添加自定义1,{{"date", type datetime}}),
+				    已添加自定义2 = Table.AddColumn(更改的类型1, "hour", each Time.Hour(Time.From([datetime]))),
+				    已添加自定义3 = Table.AddColumn(已添加自定义2, "weekday", each Date.DayOfWeekName(Date.From([datetime]), "zh-CN")),
+				    更改的类型2 = Table.TransformColumnTypes(已添加自定义3,{{"hour", Int64.Type}, {"weekday", type text}})
+				in
+				    更改的类型2
+
+	annotation PBI_NavigationStepName = 导航
+
+	annotation PBI_ResultType = Table
+

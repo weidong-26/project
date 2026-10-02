@@ -1,0 +1,22 @@
+model Model
+	culture: zh-CN
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: zh-CN
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["taobao_analysis taobao"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table 'taobao_analysis taobao'
+ref table DateTableTemplate_e4c8416e-5829-452d-9284-5c9990140195
+ref table LocalDateTable_cdba0860-bef9-4cae-ae9c-1cdc81d82d9d
+ref table LocalDateTable_6a773328-44dd-42ee-8b2a-80a4f741b579
+
+ref cultureInfo zh-CN
+

@@ -1,0 +1,112 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "dfdfbeb05bbdd9127636",
+  "position": {
+    "x": 10,
+    "y": 0,
+    "z": 0,
+    "height": 140,
+    "width": 828.75,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "taobao_analysis taobao"
+                    }
+                  },
+                  "Property": "用户数"
+                }
+              },
+              "queryRef": "taobao_analysis taobao.用户数",
+              "nativeQueryRef": "用户数"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "taobao_analysis taobao"
+                    }
+                  },
+                  "Property": "Active Users"
+                }
+              },
+              "queryRef": "taobao_analysis taobao.Active Users",
+              "nativeQueryRef": "Active Users"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "taobao_analysis taobao"
+                    }
+                  },
+                  "Property": "Buy Users"
+                }
+              },
+              "queryRef": "taobao_analysis taobao.Buy Users",
+              "nativeQueryRef": "Buy Users"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "taobao_analysis taobao"
+                    }
+                  },
+                  "Property": "购买转化率"
+                }
+              },
+              "queryRef": "taobao_analysis taobao.购买转化率",
+              "nativeQueryRef": "购买转化率"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "taobao_analysis taobao"
+                    }
+                  },
+                  "Property": "PV/UV"
+                }
+              },
+              "queryRef": "taobao_analysis taobao.PV/UV",
+              "nativeQueryRef": "PV/UV"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "taobao_analysis taobao"
+                  }
+                },
+                "Property": "用户数"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
